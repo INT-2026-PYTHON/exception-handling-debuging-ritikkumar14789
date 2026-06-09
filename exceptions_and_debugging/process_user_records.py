@@ -137,3 +137,83 @@ Explanation:
 =================================================
 
 """
+def process_records(records):
+    clean_records = []
+    error_log = []
+
+    # Loop through records with index
+    for index, record in enumerate(records):
+
+        try:
+            # Access values
+            name = record["name"]
+            age = int(record["age"])      # Convert to int
+            score = float(record["score"]) # Convert to float
+
+        # Catch MULTIPLE exceptions in ONE block
+        except (KeyError, TypeError) as e:
+            error_log.append(
+                (index, type(e).__name__, str(e))
+            )
+
+        # Catch ValueError separately
+        except ValueError as e:
+            error_log.append(
+                (index, type(e).__name__, str(e))
+            )
+
+        else:
+            # Runs ONLY if no error
+            clean_records.append({
+                "name": name,
+                "age": age,
+                "score": score
+            })
+
+    return clean_records, error_log
+
+
+# Strict function
+def process_strict(records):
+    try:
+        clean_records, error_log = process_records(records)
+
+        # If errors exist, raise RuntimeError
+        if error_log:
+            raise RuntimeError(
+                f"{len(error_log)} record(s) failed to process"
+            )
+
+        return clean_records
+
+    except RuntimeError:
+        # Re-raise exception
+        raise
+
+
+# Input data
+records = [
+    {"name": "Alice", "age": "25", "score": "88.5"},
+    {"name": "Bob", "age": "abc", "score": "70"},
+    {"name": "Carol", "age": "30"},   # missing score
+    "not a dict",                     # wrong type
+    {"name": "Dan", "age": "40", "score": "55.5"},
+]
+
+# Call first function
+clean_records, error_log = process_records(records)
+
+print("Clean Records:")
+print(clean_records)
+
+print("\nError Log:")
+print(error_log)
+
+
+# Call strict function
+try:
+    process_strict(records)
+
+except RuntimeError as e:
+    print("\nStrict mode raised:")
+    print(type(e).__name__ + ":", e)
